@@ -1,0 +1,218 @@
+{
+  "main": {
+    "id": "7222a69f5dcf873e",
+    "type": "split",
+    "children": [
+      {
+        "id": "8d1ce223b9c4f526",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "702e155ff8aac299",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Datasets/ClaMP Dataset.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ClaMP Dataset"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "2389dea707119da1",
+    "type": "split",
+    "children": [
+      {
+        "id": "62a2ddf445e8748e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cbc9bba147183966",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de archivos"
+            }
+          },
+          {
+            "id": "9f73150322293173",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Buscar"
+            }
+          },
+          {
+            "id": "db42acc3f7cc697c",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "26d8825880e7810d",
+    "type": "split",
+    "children": [
+      {
+        "id": "f611b4259636bdfc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "56e62703839394dc",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Enlaces entrantes"
+            }
+          },
+          {
+            "id": "e71bbb7913950e38",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Enlaces salientes"
+            }
+          },
+          {
+            "id": "5ec711677dd1779a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "5e11ca6a2c18aa7f",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas las propiedades"
+            }
+          },
+          {
+            "id": "d65b7f3cb416e4c1",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Esquema"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Crear nueva base": false
+    }
+  },
+  "active": "702e155ff8aac299",
+  "lastOpenFiles": [
+    "Datasets/CICMalDroid.md",
+    "Datasets/ClaMP Dataset.md",
+    "Estado del Arte.md",
+    "Metodología.md",
+    "Métodos de Análisis/Análisis Dinámico.md",
+    "Modelos ML/Regresión Logística.md",
+    "Modelos ML/Redes Neuronales Convolucionales.md",
+    "Modelos ML/Random Forest.md",
+    "Modelos ML/Machine Learning.md",
+    "Métodos de Análisis/Análisis Híbrido.md",
+    "Métodos de Análisis/Análisis Estático.md",
+    "Conceptos/Trade-offs en XAI.md",
+    "Conceptos/Inteligencia Artificial Explicable (XAI).md",
+    "Conceptos/Costo Computacional de XAI.md",
+    "Conceptos/Clasificación de Malware.md",
+    "Papers/XAI en Detección de Malware - Thompson et al.md",
+    "Papers/MAL-XSEL Framework.md",
+    "Papers/ACM Computing Survey (3677374).md",
+    "Papers/Investigación Comprehensiva Detección de Malware con XAI.md",
+    "Modelos ML/LightGBM.md",
+    "Modelos ML/Ensemble Learning.md",
+    "Modelos ML/Deep Learning.md",
+    "Seminario de Título - MOC]], [[Estado del Arte]], [[Trade-offs en XAI.md",
+    "Propuesta - Optimización del Costo Computacional de XAI en Clasificación de Malware]], [[Seminario de Título - MOC.md",
+    "SHAP]], [[LIME]], [[Trade-offs en XAI]], [[Inteligencia Artificial Explicable (XAI).md",
+    "Propuesta - Optimización del Costo Computacional de XAI en Clasificación de Malware.md",
+    "Sin título.canvas"
+  ]
+}

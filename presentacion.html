@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentación Avance: XAI para Clasificación de Malware - PUCV</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --accent-glow: rgba(129, 140, 248, 0.25);
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --border: rgba(148, 163, 184, 0.15);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Header Bar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      background: rgba(15, 23, 42, 0.85);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .doc-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .timer-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .timer-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    .btn {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #334155;
+      border-color: var(--primary);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      perspective: 1000px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 90%;
+      max-width: 1200px;
+      height: 84%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      overflow-y: auto;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .slide.active {
+      display: flex;
+      animation: slideIn 0.35s ease-out forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Slide Content Typography */
+    .slide-number {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    h1.slide-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2.slide-subtitle {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      flex: 1;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card h3 {
+      font-size: 1.1rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card ul {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .highlight-box {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.95rem;
+      margin-top: 16px;
+    }
+
+    .formula-box {
+      background: #090d16;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      color: #38bdf8;
+      font-size: 1rem;
+      text-align: center;
+      margin: 8px 0;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 8px;
+    }
+
+    table.data-table th {
+      background: rgba(30, 41, 59, 0.9);
+      color: var(--primary);
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    table.data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: #cbd5e1;
+    }
+
+    table.data-table tr:hover {
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    /* Diagram Styles */
+    .pipeline-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      gap: 16px;
+    }
+
+    .pipeline-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #0f172a;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .pipeline-info h4 {
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .pipeline-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Footer & Controls */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      background: rgba(15, 23, 42, 0.95);
+      border-top: 1px solid var(--border);
+      z-index: 10;
+    }
+
+    .controls-left, .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      max-width: 400px;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 0 20px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--primary));
+      width: 6.66%;
+      transition: width 0.3s;
+    }
+
+    .btn-nav {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--primary);
+      color: #0f172a;
+      border-color: var(--primary);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Speaker Notes Panel */
+    #notes-panel {
+      position: fixed;
+      bottom: 60px;
+      right: 24px;
+      width: 450px;
+      max-height: 400px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      backdrop-filter: blur(20px);
+      display: none;
+      flex-direction: column;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: #1e293b;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .notes-body {
+      padding: 16px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      overflow-y: auto;
+      max-height: 320px;
+    }
+
+    .notes-body em {
+      color: var(--primary);
+      font-style: normal;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <span class="badge">PUCV · Informática</span>
+      <span class="doc-info">Seminario de Título · Informe de Avance</span>
+    </div>
+    <div class="header-right">
+      <div class="timer-badge">
+        <div class="timer-indicator" id="timer-dot"></div>
+        <span id="timer-display">00:00</span>
+        <span style="color:var(--text-muted);font-size:0.75rem;">/ 18:00</span>
+      </div>
+      <button class="btn" id="btn-timer" onclick="toggleTimer()">Iniciar Tiempo</button>
+      <button class="btn" id="btn-notes" onclick="toggleNotes()">🎙️ Guión [S]</button>
+      <button class="btn" onclick="toggleFullscreen()">⛶ Pantalla Completa [F]</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Slide 1 -->
+    <div class="slide active" data-time="0:00 - 0:50">
+      <div class="slide-number">Diapositiva 01 / 15 · Presentación</div>
+      <h1 class="slide-title">Inteligencia Artificial Explicable (XAI) para la Clasificación de Malware</h1>
+      <h2 class="slide-subtitle">Diseño de un Framework Multinivel para la Optimización del Costo Computacional</h2>
+      <div class="card" style="margin-top:20px; border-color: rgba(56,189,248,0.3);">
+        <p style="font-size:1.1rem; line-height:1.8;">
+          <strong>Autores:</strong> Rigoberto Ignacio Enrique Canales Puebla & Francisco Ignacio Espinoza Vasquez<br>
+          <strong>Profesora Guía:</strong> Pamela Hermosilla Monckton<br>
+          <strong>Profesor Correferente:</strong> Sebastian Berrios Vasquez<br>
+          <strong>Carrera:</strong> Ingeniería en Informática — Pontificia Universidad Católica de Valparaíso<br>
+          <strong>Fecha:</strong> Septiembre 2026
+        </p>
+      </div>
+      <div class="highlight-box">
+        🎯 <strong>Propósito de esta sesión:</strong> Presentar formalmente el problema operativo de XAI en ciberseguridad, la revisión del estado del arte (PRISMA), los objetivos formalizados y la arquitectura metodológica propuesta para optimizar la latencia en Centros de Operaciones de Seguridad (SOC).
+      </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide" data-time="0:50 - 2:05">
+      <div class="slide-number">Diapositiva 02 / 15 · Contexto</div>
+      <h1 class="slide-title">Contexto y Motivación</h1>
+      <h2 class="slide-subtitle">El auge del malware avanzado y las exigencias de un SOC en tiempo real</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>⚡ La Crisis del Malware Moderno</h3>
+          <ul>
+            <li>Crecimiento exponencial diario con técnicas de evasión, polimorfismo y ataques <em>zero-day</em>.</li>
+            <li>Obsolescencia de los antivirus tradicionales basados en firmas estáticas.</li>
+            <li>Adopción masiva de Machine Learning (ML) y Deep Learning (DL).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🛡️ La Realidad Operativa del SOC</h3>
+          <ul>
+            <li>Un SOC procesa cientos de miles de eventos y alertas diarias.</li>
+            <li>Se requiere monitoreo continuo y detección en tiempo real.</li>
+            <li>Los modelos predictivos logran exactitud superior al <strong>99%</strong>, pero con un severo obstáculo práctico.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="highlight-box">
+        <strong>Premisa Clave:</strong> La alta precisión matemática de los modelos es inútil si su implementación operativa paraliza los tiempos de respuesta ante un ataque activo.
+      </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="slide" data-time="2:05 - 3:20">
+      <div class="slide-number">Diapositiva 03 / 15 · El Problema</div>
+      <h1 class="slide-title">El Problema de la «Caja Negra»</h1>
+      <h2 class="slide-subtitle">Por qué la predicción aislada no es suficiente para la respuesta a incidentes</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>❌ La Alerta Aislada no es Accionable</h3>
+          <ul>
+            <li>Recibir "Malware: 99.8%" no dice nada sobre el vector de ataque.</li>
+            <li>¿Qué llamadas al sistema motivaron la alerta?</li>
+            <li>¿Cuáles son los Indicadores de Compromiso (IoC) específicos para contener el incidente?</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⚖️ Decisiones Críticas en el SOC</h3>
+          <ul>
+            <li><strong>Aislamiento de infraestructura:</strong> Apagar un servidor de producción exige justificación técnica fehaciente.</li>
+            <li><strong>Fatiga de alertas:</strong> Falsos positivos no explicados minan la confianza del analista en el modelo.</li>
+            <li><strong>Auditoría forense:</strong> Requisito normativo y legal para documentar incidentes de ciberseguridad.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="highlight-box">
+        <strong>Conclusión de Negocio:</strong> En ciberseguridad, comprender <em>por qué</em> se emitió una alerta es tan importante como detectarla oportunamente.
+      </div>
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="slide" data-time="3:20 - 4:45">
+      <div class="slide-number">Diapositiva 04 / 15 · Cuello de Botella</div>
+      <h1 class="slide-title">La Paradoja de XAI y el Cuello de Botella</h1>
+      <h2 class="slide-subtitle">El prohibitivo costo computacional de SHAP y LIME en entornos de alta dimensionalidad</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>🔬 Métodos XAI Estándar</h3>
+          <ul>
+            <li><strong>SHAP:</strong> Basado en Teoría de Juegos (Valores de Shapley). Base matemática axiomática y robusta.</li>
+            <li><strong>LIME:</strong> Modelos subrogados lineales locales mediante perturbaciones sintéticas.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>💥 El Conflicto de Complejidad</h3>
+          <ul>
+            <li><strong>KernelSHAP</strong> tiene complejidad exponencial: <span style="color:var(--yellow);font-family:var(--font-mono);">O(2<sup>n</sup>)</span>.</li>
+            <li><strong>LIME</strong> genera y clasifica miles de perturbaciones por archivo sospechoso.</li>
+            <li>Los binarios poseen <strong>cientos o miles de variables</strong> (PE headers, secuencias de bytes, API calls).</li>
+          </ul>
+        </div>
+      </div>
+      <div class="formula-box">
+        Alta Dimensionalidad (n variables) + Múltiples Alertas = Colapso de CPU y Latencia Inviable
+      </div>
+    </div>
+
+    <!-- Slide 5 -->
+    <div class="slide" data-time="4:45 - 6:00">
+      <div class="slide-number">Diapositiva 05 / 15 · Preguntas de Investigación</div>
+      <h1 class="slide-title">Preguntas de Investigación y Brecha</h1>
+      <h2 class="slide-subtitle">El vacío en la literatura y las tres interrogantes estructurantes</h2>
+      <div class="highlight-box" style="margin-top:0; border-color:var(--accent);">
+        <strong>Pregunta General de Investigación:</strong><br>
+        <em>¿En qué medida es posible reducir el costo computacional de las técnicas de XAI en la clasificación de malware mediante un enfoque multinivel que integre selección de características, destilación de conocimiento y explicabilidad adaptativa sin comprometer la precisión de la detección ni la fidelidad de las explicaciones?</em>
+      </div>
+      <div class="content-grid" style="margin-top:16px;">
+        <div class="card">
+          <h3>PI1 · Reducción Dimensional</h3>
+          <p>¿Cómo influye la selección previa de variables en los tiempos de cómputo de SHAP y LIME al analizar muestras complejas?</p>
+        </div>
+        <div class="card">
+          <h3>PI2 · Destilación y TreeSHAP</h3>
+          <p>¿Es viable transferir conocimiento de un ensamble a un modelo ligero habilitando TreeSHAP polinomial sin degradar el F1-Score?</p>
+        </div>
+        <div class="card">
+          <h3>PI3 · Adaptabilidad y Caché</h3>
+          <p>¿En qué proporción un esquema adaptativo por certidumbre junto a una caché vectorial reduce el costo promedio en flujos continuos?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 6 -->
+    <div class="slide" data-time="6:00 - 7:00">
+      <div class="slide-number">Diapositiva 06 / 15 · Objetivos</div>
+      <h1 class="slide-title">Objetivos del Proyecto</h1>
+      <h2 class="slide-subtitle">Alineación metodológica en tres dimensiones: Estudio, Desarrollo y Validación</h2>
+      <div class="card" style="border-left:4px solid var(--primary); margin-bottom:16px;">
+        <strong>Objetivo General:</strong> Diseñar, construir y validar un framework multinivel para reducir el costo computacional de la XAI en la Clasificación de Malware, con el fin de permitir el uso de modelos transparentes en operaciones de ciberseguridad que exigen respuestas rápidas.
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Dimensión</th>
+            <th>ID</th>
+            <th>Objetivo Específico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Estudio</strong></td>
+            <td><strong>OE1</strong></td>
+            <td>Revisión sistemática de literatura (SLR) para identificar cuellos de botella computacionales de XAI en malware.</td>
+          </tr>
+          <tr>
+            <td><strong>Estudio</strong></td>
+            <td><strong>OE2</strong></td>
+            <td>Definir marco de referencia para medir costo computacional (latencia, RAM) y utilidad de explicaciones en monitoreo continuo.</td>
+          </tr>
+          <tr>
+            <td><strong>Desarrollo</strong></td>
+            <td><strong>OE3</strong></td>
+            <td>Diseñar la arquitectura del framework integrando reducción dimensional, destilación y explicabilidad adaptativa.</td>
+          </tr>
+          <tr>
+            <td><strong>Desarrollo</strong></td>
+            <td><strong>OE4</strong></td>
+            <td>Construir prototipo funcional integrado compatible con clasificadores y librerías estándar (SHAP, LIME).</td>
+          </tr>
+          <tr>
+            <td><strong>Validación</strong></td>
+            <td><strong>OE5</strong></td>
+            <td>Evaluar experimentalmente el sistema en datasets públicos frente a baselines tradicionales sin sacrificar precisión.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Slide 7 -->
+    <div class="slide" data-time="7:00 - 8:20">
+      <div class="slide-number">Diapositiva 07 / 15 · Marco Teórico</div>
+      <h1 class="slide-title">Marco Teórico y Revisión PRISMA</h1>
+      <h2 class="slide-subtitle">Protocolo riguroso de revisión sistemática de literatura</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>📚 Bases Científicas Indexadas</h3>
+          <ul>
+            <li>IEEE Xplore</li>
+            <li>Scopus</li>
+            <li>ACM Digital Library</li>
+            <li>ScienceDirect</li>
+            <li>Web of Science (WoS)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>🔍 Fases del Flujo PRISMA</h3>
+          <ul>
+            <li><strong>Identificación:</strong> Búsqueda booleana cruzando XAI + Malware + Costo/Latencia; deduplicación.</li>
+            <li><strong>Cribado (Screening):</strong> Filtrado por título y resumen; exclusión de temas ajenos a malware o sin XAI.</li>
+            <li><strong>Idoneidad (Eligibility):</strong> Evaluación a texto completo; exclusión por falta de métricas reproducibles de costo.</li>
+            <li><strong>Inclusión:</strong> Síntesis comparativa final de literatura primaria.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="highlight-box">
+        <strong>Hallazgo Central:</strong> Existe un sesgo generalizado en la literatura hacia la maximización del Accuracy en repositorios estáticos, ignorando los cuellos de botella de latencia operativa.
+      </div>
+    </div>
+
+    <!-- Slide 8 -->
+    <div class="slide" data-time="8:20 - 9:35">
+      <div class="slide-number">Diapositiva 08 / 15 · Estado del Arte</div>
+      <h1 class="slide-title">Análisis Comparativo del Estado del Arte</h1>
+      <h2 class="slide-subtitle">Matriz de trabajos representativos y brechas identificadas</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Estudio</th>
+            <th>Modelo</th>
+            <th>Técnica XAI</th>
+            <th>Dataset</th>
+            <th>Limitación Crítica Reportada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Ullah et al.</strong></td>
+            <td>Stacking Ensemble</td>
+            <td>SHAP & LIME</td>
+            <td>Archivos PE (Windows)</td>
+            <td>Alto costo computacional para generar explicaciones de forma continua.</td>
+          </tr>
+          <tr>
+            <td><strong>Kim et al.</strong></td>
+            <td>DL sobre Grafos</td>
+            <td>Mapas de activación</td>
+            <td>Ecosistema Android</td>
+            <td>La transformación a Grafos de Llamadas a Funciones (FCG) exige alto procesamiento previo.</td>
+          </tr>
+          <tr>
+            <td><strong>Alotaibi</strong></td>
+            <td>Fusión Multimodal</td>
+            <td>Mecanismos de atención</td>
+            <td>Estático + Imágenes</td>
+            <td>Arquitectura hipercompleja que opera como modelo cerrado de altísimo consumo.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="highlight-box" style="margin-top:16px;">
+        💡 <strong>Oportunidad:</strong> Diseñar un modelo que trabaje sobre datos tabulares directos (encabezados PE y permisos) sin conversiones costosas, desacoplando la exactitud del modelo de su costo explicativo.
+      </div>
+    </div>
+
+    <!-- Slide 9 -->
+    <div class="slide" data-time="9:35 - 11:05">
+      <div class="slide-number">Diapositiva 09 / 15 · Arquitectura</div>
+      <h1 class="slide-title">Arquitectura del Framework Multinivel</h1>
+      <h2 class="slide-subtitle">Diseño conceptual en tres niveles modulares encadenados</h2>
+      <div class="pipeline-diagram">
+        <div class="pipeline-step" style="border-left: 4px solid var(--primary);">
+          <div class="pipeline-num">1</div>
+          <div class="pipeline-info">
+            <h4>Nivel 1: Selección Inteligente de Características</h4>
+            <p>Filtro previo por importancia de árboles (Random Forest/LightGBM) y metaheurísticas (WOA). Reduce el espacio combinatorio de O(2<sup>n</sup>) antes de la inferencia.</p>
+          </div>
+        </div>
+        <div class="pipeline-step" style="border-left: 4px solid var(--accent);">
+          <div class="pipeline-num">2</div>
+          <div class="pipeline-info">
+            <h4>Nivel 2: Clasificación con Destilación de Conocimiento</h4>
+            <p>Modelo Profesor (Stacking Ensemble robusto) ➔ Modelo Estudiante (LightGBM). Permite inferencia rápida y cálculo de <strong>TreeSHAP en tiempo polinomial O(TLD<sup>2</sup>)</strong>.</p>
+          </div>
+        </div>
+        <div class="pipeline-step" style="border-left: 4px solid var(--green);">
+          <div class="pipeline-num">3</div>
+          <div class="pipeline-info">
+            <h4>Nivel 3: Explicabilidad Adaptativa y Motor de Caché</h4>
+            <p>Caché vectorial indexada (δ = 0.03) para respuestas instantáneas O(1). Enrutamiento por certidumbre: Triage ligero (Top-5), Perfil estándar o Auditoría profunda.</p>
+          </div>
+        </div>
+      </div>
+      <div class="formula-box" style="margin-top:16px;">
+        Muestra de Entrada ➔ [Nivel 1] ➔ [Nivel 2] ➔ [Nivel 3] ➔ Alerta Explicada para el SOC
+      </div>
+    </div>
+
+    <!-- Slide 10 -->
+    <div class="slide" data-time="11:05 - 12:20">
+      <div class="slide-number">Diapositiva 10 / 15 · Nivel 1</div>
+      <h1 class="slide-title">Nivel 1: Selección de Características</h1>
+      <h2 class="slide-subtitle">Reducción dimensional previa a la fase de inferencia y explicación</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>📉 La Reducción del Espacio Factorial</h3>
+          <ul>
+            <li>En malware, los binarios tienen miles de atributos (llamadas API, secciones, permisos).</li>
+            <li>KernelSHAP escala como <span style="font-family:var(--font-mono);color:var(--yellow);">O(2<sup>n</sup>)</span>. Reducir <em>n</em> genera una caída exponencial inmediata en el tiempo de cálculo.</li>
+            <li>Elimina ruido, variables colineales y atributos con varianza nula.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⚙️ Métodos Implementados</h3>
+          <ul>
+            <li><strong>Filtro basado en árboles:</strong> Importancia por ganancia (*gain*) y división (*split*) en Random Forest y LightGBM.</li>
+            <li><strong>Optimización Metaheurística:</strong> Algoritmo de Optimización de Ballenas (<em>Whale Optimization Algorithm - WOA</em>) y algoritmos genéticos.</li>
+            <li><strong>Función Multi-objetivo:</strong> Minimizar cardinalidad de features reteniendo el F1-Score del modelo.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 11 -->
+    <div class="slide" data-time="12:20 - 13:45">
+      <div class="slide-number">Diapositiva 11 / 15 · Nivel 2</div>
+      <h1 class="slide-title">Nivel 2: Stacking y Destilación</h1>
+      <h2 class="slide-subtitle">Desacoplando la complejidad del clasificador del costo de su explicación</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>🎓 Modelo Profesor (Stacking Ensemble)</h3>
+          <ul>
+            <li>Combina múltiples clasificadores heterogéneos (árboles, redes, SVM).</li>
+            <li>Capacidad superior para detectar malware complejo y polimórfico.</li>
+            <li><strong>Problema:</strong> Explicar un ensamble multicapa con XAI es computacionalmente inviable en un SOC.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⚡ Modelo Estudiante (LightGBM Destilado)</h3>
+          <ul>
+            <li>Mediante <em>Knowledge Distillation</em>, el estudiante aprende las probabilidades calibradas del profesor.</li>
+            <li>Conserva la frontera de decisión con inferencia ultrarrápida en CPU.</li>
+            <li>Habilita el uso nativo del algoritmo analítico <strong>TreeSHAP</strong>.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="formula-box">
+        KernelSHAP: O(2<sup>n</sup>) [Exponencial] ➔ TreeSHAP: O(T · L · D<sup>2</sup>) [Polinomial]
+      </div>
+    </div>
+
+    <!-- Slide 12 -->
+    <div class="slide" data-time="13:45 - 15:20">
+      <div class="slide-number">Diapositiva 12 / 15 · Nivel 3</div>
+      <h1 class="slide-title">Nivel 3: Explicabilidad Adaptativa y Caché</h1>
+      <h2 class="slide-subtitle">Distribución óptima de recursos computacionales según el nivel de certidumbre</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Régimen</th>
+            <th>Certidumbre P(ŷ | x)</th>
+            <th>Técnica XAI Despachada</th>
+            <th>Acción Operativa en el SOC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:var(--green);">Ligero</strong></td>
+            <td>P(ŷ) ≥ 0.95</td>
+            <td><strong>Top-5 TreeSHAP</strong></td>
+            <td>Triage instantáneo en alertas evidentes y tráfico masivo.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--yellow);">Estándar</strong></td>
+            <td>0.80 ≤ P(ŷ) &lt; 0.95</td>
+            <td><strong>TreeSHAP Completo</strong></td>
+            <td>Auditoría técnica ordinaria ante software empaquetado o firmas ambiguas.</td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--red);">Profundo</strong></td>
+            <td>P(ŷ) &lt; 0.80</td>
+            <td><strong>TreeSHAP + LIME</strong></td>
+            <td>Revisión forense prioritaria cruzada de muestras limítrofes críticas.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="content-grid" style="margin-top:14px;">
+        <div class="card">
+          <h3>⚡ Caché Vectorial Indexada</h3>
+          <p>Muestras pertenecientes a la misma campaña con distancia coseno <strong>δ &lt; 0.03</strong> reutilizan explicaciones previas en <strong>tiempo constante O(1)</strong>.</p>
+        </div>
+        <div class="card">
+          <h3>🎯 Calibración de Umbrales</h3>
+          <p>Los límites (0.95 y 0.80) serán ajustados sobre el conjunto de validación mediante <strong>Diagramas de Fiabilidad (Reliability Diagrams)</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 13 -->
+    <div class="slide" data-time="15:20 - 16:35">
+      <div class="slide-number">Diapositiva 13 / 15 · Diseño Experimental</div>
+      <h1 class="slide-title">Diseño Experimental y Baselines</h1>
+      <h2 class="slide-subtitle">Validación cuantitativa con conjuntos de datos públicos de ciberseguridad</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>📦 Datasets Seleccionados</h3>
+          <ul>
+            <li><strong>CICMalDroid 2020:</strong> >17.000 muestras Android (Adware, Banking, Ransomware, Riskware, Benigno). Análisis estático y dinámico.</li>
+            <li><strong>ClaMP Dataset:</strong> Binarios Windows PE con 68 atributos de cabeceras y secciones.</li>
+            <li>Partición estratificada: 70% Train / 15% Val / 15% Test.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>📊 Métricas Tripartitas</h3>
+          <ul>
+            <li><strong>Detección:</strong> Accuracy, Precision, Recall, Macro F1, AUC-ROC.</li>
+            <li><strong>Eficiencia:</strong> Latencia inferencia (t<sub>inf</sub>), latencia explicación (t<sub>exp</sub>), RAM pico (MB), Throughput, Speedup (S).</li>
+            <li><strong>Calidad XAI:</strong> Fidelidad (pruebas de perturbación) y Estabilidad sintáctica.</li>
+          </ul>
+        </div>
+      </div>
+      <table class="data-table" style="margin-top:14px;">
+        <thead>
+          <tr>
+            <th>Configuración</th>
+            <th>Clasificador</th>
+            <th>Método XAI</th>
+            <th>Selección Features</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Baseline 1 (Tradicional)</strong></td>
+            <td>LightGBM / Random Forest</td>
+            <td>KernelSHAP / LIME estándar</td>
+            <td>Sin selección (todas)</td>
+          </tr>
+          <tr>
+            <td><strong>Baseline 2 (Estado del Arte)</strong></td>
+            <td>Stacking Ensemble</td>
+            <td>TreeSHAP / LIME directo</td>
+            <td>Selección estática convencional</td>
+          </tr>
+          <tr>
+            <td><strong>Propuesta Multinivel</strong></td>
+            <td>Modelo Destilado Ligero</td>
+            <td>XAI Adaptativo + TreeSHAP + Caché</td>
+            <td>Metaheurística / Importancia</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Slide 14 -->
+    <div class="slide" data-time="16:35 - 17:40">
+      <div class="slide-number">Diapositiva 14 / 15 · Plan de Trabajo</div>
+      <h1 class="slide-title">Plan de Trabajo y Estado de Avance</h1>
+      <h2 class="slide-subtitle">Cronograma estructurado a dos semestres lectivos</h2>
+      <div class="content-grid">
+        <div class="card">
+          <h3>✅ Avance Consolidado (Semestre I)</h3>
+          <ul>
+            <li><strong>T1:</strong> Planteamiento del problema y contexto en SOCs [Completada].</li>
+            <li><strong>T2:</strong> Revisión sistemática de literatura PRISMA [Completada].</li>
+            <li><strong>T3:</strong> Formulación de objetivos y alcance [Completada].</li>
+            <li><strong>T4:</strong> Diseño metodológico, métricas y baselines [En curso / Cierre].</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>⏳ Próximos Pasos (Cierre Semestre I)</h3>
+          <ul>
+            <li><strong>T5 (Octubre 2026):</strong> Limpieza, normalización y EDA de datasets.</li>
+            <li><strong>T6 (Noviembre 2026):</strong> Implementación empírica y benchmark de baselines.</li>
+            <li><strong>H1 (Diciembre 2026):</strong> Consolidación y entrega de Informe Final de Seminario.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="highlight-box">
+        <strong>Semestre II (2027-1):</strong> Desarrollo del prototipo unificado (T7-T10), Validación experimental y auditoría XAI (T11-T13), Redacción de memoria y defensa de título (T14-T15, H2).
+      </div>
+    </div>
+
+    <!-- Slide 15 -->
+    <div class="slide" data-time="17:40 - 18:30">
+      <div class="slide-number">Diapositiva 15 / 15 · Conclusiones</div>
+      <h1 class="slide-title">Conclusiones y Ronda de Preguntas</h1>
+      <h2 class="slide-subtitle">Síntesis del aporte y apertura del diálogo con la comisión</h2>
+      <div class="content-grid">
+        <div class="card" style="border-left:4px solid var(--green);">
+          <h3>📌 Síntesis del Aporte</h3>
+          <ul>
+            <li>Se identificó una brecha crítica: la inviabilidad computacional de XAI en operaciones de ciberseguridad en vivo.</li>
+            <li>Se formuló una solución de ingeniería integral que ataca el costo en 3 niveles: dimensionalidad, modelo y certidumbre.</li>
+            <li>El proyecto cuenta con un marco experimental riguroso y replicable listo para la fase de implementación.</li>
+          </ul>
+        </div>
+        <div class="card" style="border-left:4px solid var(--primary);">
+          <h3>🚀 Impacto Esperado</h3>
+          <ul>
+            <li>Transformar XAI de un ejercicio teórico lento a una herramienta de triage forense ágil en SOCs.</li>
+            <li>Reducción sustancial del tiempo de explicación preservando la calidad de los reportes técnicos.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px; text-align:center; background:rgba(56,189,248,0.1); border-color:var(--primary);">
+        <h2 style="color:var(--primary); margin-bottom:8px;">¡Muchas gracias por su atención!</h2>
+        <p style="color:var(--text-muted);">Quedamos a disposición de la profesora Pamela Hermosilla y del profesor Sebastian Berrios para sus consultas y observaciones.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Speaker Notes Modal -->
+  <div id="notes-panel">
+    <div class="notes-header">
+      <span>🎙️ GUIÓN DEL ORADOR (<span id="notes-slide-num">1</span>/15)</span>
+      <span id="notes-time-target" style="color:var(--yellow);font-family:var(--font-mono);">0:00 - 0:50</span>
+    </div>
+    <div class="notes-body" id="notes-content">
+      Cargando guión...
+    </div>
+  </div>
+
+  <footer>
+    <div class="controls-left">
+      <button class="btn-nav" id="btn-prev" onclick="prevSlide()" title="Diapositiva Anterior (Flecha Izq)">◀</button>
+      <button class="btn-nav" id="btn-next" onclick="nextSlide()" title="Diapositiva Siguiente (Flecha Der)">▶</button>
+      <span style="font-family:var(--font-mono);font-size:0.9rem;" id="slide-indicator">01 / 15</span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="controls-right">
+      <span style="font-size:0.8rem;color:var(--text-muted);">Navegación: [← / →] o [Espacio] · Guión: [S] · Pantalla Completa: [F]</span>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    const notes = [
+      // 1
+      "Muy buenos días, profesora Pamela Hermosilla, profesor Sebastian Berrios y presentes. Junto a mi compañero, tenemos el agrado de presentar nuestro Informe de Avance de Seminario de Título: 'Inteligencia Artificial Explicable (XAI) para la Clasificación de Malware: Diseño de un Framework Multinivel para la Optimización del Costo Computacional'. A lo largo de esta presentación expondremos el problema operativo que enfrentan los centros de ciberseguridad, la revisión sistemática del estado del arte, los objetivos formalizados y la arquitectura y metodología técnica estructurada.",
+      // 2
+      "Hoy en día el malware evoluciona con técnicas de polimorfismo, evasión y ataques zero-day que superan a los antivirus tradicionales. La industria se ha volcado al Machine Learning y Deep Learning con tasas de detección sobre el 99%. Sin embargo, en un Centro de Operaciones de Seguridad (SOC), donde se reciben miles de eventos por segundo, no solo importa detectar con precisión: cada milisegundo cuenta para contener la amenaza en tiempo real.",
+      // 3
+      "A pesar de su exactitud, los modelos operan como 'cajas negras'. Para un analista de un SOC, saber únicamente que un archivo tiene un '99.8% de malware' no basta. Antes de activar protocolos críticos como aislar servidores o cortar enlaces de red, necesita saber: ¿Por qué el modelo dice que es malware? Comprender la causa permite extraer Indicadores de Compromiso (IoCs) específicos y realizar auditoría forense sin caer en la fatiga de alertas.",
+      // 4
+      "Para abrir estas cajas negras se usa XAI: SHAP entrega una base matemática en teoría de juegos y LIME aproxima el comportamiento local. Pero aquí surge el cuello de botella: KernelSHAP tiene complejidad exponencial O(2^n), y LIME requiere clasificar miles de perturbaciones por binario. En ciberseguridad, con miles de características por archivo, calcular explicaciones para cada alerta colapsa la CPU. En resumen: la explicabilidad tradicional no escala al monitoreo en tiempo real.",
+      // 5
+      "Al revisar la literatura constatamos una brecha clave: los estudios buscan maximizar accuracy o probar que XAI funciona, pero casi ninguno aborda el costo computacional. Por eso formulamos nuestra Pregunta General: ¿En qué medida es posible reducir el costo de XAI en malware con un enfoque multinivel sin comprometer precisión ni fidelidad? De allí se desprenden 3 preguntas específicas: impacto de la reducción dimensional, viabilidad de la destilación hacia TreeSHAP polinomial, y el ahorro del esquema adaptativo con caché.",
+      // 6
+      "Nuestro Objetivo General es diseñar, construir y validar este framework multinivel para viabilizar modelos transparentes en operaciones de ciberseguridad de respuesta rápida. Estructuramos el proyecto en 3 dimensiones: Estudio (revisión sistemática de literatura OE1 y marco formal de métricas OE2), Desarrollo (diseño arquitectónico OE3 y prototipo integrado OE4), y Validación (evaluación empírica en datasets públicos y baselines OE5).",
+      // 7
+      "Para garantizar la rigurosidad científica del estado del arte, ejecutamos una Revisión Sistemática siguiendo el protocolo internacional PRISMA. Consultamos las 5 bases científicas más reconocidas: IEEE, Scopus, ACM, ScienceDirect y WoS. Cruzamos términos booleanos de ciberseguridad, XAI y costo/latencia, aplicando un protocolo de cuatro fases: identificación, cribado por título/resumen, evaluación de texto completo por métricas cuantitativas, e inclusión final.",
+      // 8
+      "En la matriz comparativa vemos las limitaciones del estado del arte: Ullah et al. con Stacking PE logran >99% de exactitud con SHAP/LIME, pero reconocen el alto costo computacional para explicaciones continuas. Kim et al. en Android transforman código a Grafos de Llamadas a Funciones (FCG), lo que añade un enorme procesamiento previo. Alotaibi usa fusión multimodal profunda de alto consumo. Ninguno optimiza la etapa de explicación en tiempo de inferencia.",
+      // 9
+      "Aquí presentamos el núcleo de nuestra propuesta: la Arquitectura Multinivel. El principio rector es desacoplar la alta capacidad predictiva del modelo del costo computacional de su explicabilidad. El flujo recibe la muestra sospechosa, pasa por el Nivel 1 (reducción dimensional previa), el Nivel 2 (clasificación con modelo destilado rápido) y el Nivel 3 (explicabilidad adaptativa con caché de firmas), entregando al SOC una Alerta Explicada con mínima latencia.",
+      // 10
+      "En el Nivel 1 atacamos la dimensión n. Dado que KernelSHAP escala como O(2^n), reducir variables alivia de inmediato la carga combinatoria. Aplicamos dos estrategias: primero, un filtrado rápido basado en importancia de árboles (Random Forest y LightGBM) para eliminar atributos con nulo aporte discriminativo. Y segundo, la exploración de algoritmos metaheurísticos (WOA o genéticos) con funciones de aptitud multiobjetivo que minimizan variables reteniendo el puntaje F1.",
+      // 11
+      "En el Nivel 2 enfrentamos el dilema del modelo. Para malware complejo necesitamos la robustez de un Stacking Ensemble (Modelo Profesor), pero auditarlo directamente con XAI colapsaría la CPU. Por ello aplicamos Destilación de Conocimiento hacia un Modelo Estudiante ligero: LightGBM. Esta elección permite inferencia ultrarrápida y habilita el uso analítico de TreeSHAP, pasando de una complejidad exponencial O(2^n) a una polinomial O(T*L*D^2), reduciendo tiempos de minutos a milisegundos.",
+      // 12
+      "En el Nivel 3 optimizamos según la realidad operativa: no toda muestra requiere auditoría exhaustiva. Si la certidumbre es muy alta (P >= 0.95), despachamos un Régimen Ligero con Top-5 TreeSHAP para triage instantáneo. Si la confianza es estándar (0.80 a 0.95), entregamos TreeSHAP completo para binarios empaquetados. Y si la confianza cae (< 0.80), activamos el Régimen Profundo combinando TreeSHAP con LIME. Además, incorporamos una Caché Vectorial: si una muestra dista menos de delta = 0.03 de una previa, reutilizamos su explicación en tiempo constante O(1).",
+      // 13
+      "Para validar experimentalmente la propuesta seleccionamos dos datasets públicos referentes: CICMalDroid 2020 para Android (>17.000 muestras estáticas y dinámicas) y ClaMP para Windows PE (68 características). Usaremos una partición 70/15/15 estratificada. Mediremos rendimiento (Accuracy, F1, AUC), eficiencia computacional (latencia de inferencia y explicación, RAM pico, throughput y speedup) y calidad XAI (fidelidad por perturbación y estabilidad sintáctica), contrastando con baselines tradicionales y del estado del arte.",
+      // 14
+      "En cuanto a la planificación, durante este Semestre I hemos completado el planteamiento del problema (T1), la revisión sistemática PRISMA (T2), la formulación de objetivos (T3) y estamos cerrando el diseño metodológico (T4). Para los meses restantes de 2026 ejecutaremos la preparación de datasets (T5) y los benchmarks baselines (T6), entregando el informe final en diciembre (H1). Durante 2027-1 completaremos el desarrollo, validación y defensa de título.",
+      // 15
+      "En conclusión, este informe de avance consolida las bases teóricas y de ingeniería para resolver un problema crítico: viabilizar la IA explicable en el monitoreo en tiempo real de ciberseguridad. Nuestra propuesta ataca el costo en 3 niveles complementarios sin sacrificar la detección. Agradecemos sinceramente su atención y abrimos el espacio para las preguntas y comentarios de la profesora Pamela Hermosilla y el profesor Sebastian Berrios."
+    ];
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        s.classList.remove('active');
+        if (idx === currentSlide) {
+          s.classList.add('active');
+        }
+      });
+
+      document.getElementById('slide-indicator').textContent = 
+        String(currentSlide + 1).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
+      
+      const progressPercent = ((currentSlide + 1) / totalSlides) * 100;
+      document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+      document.getElementById('btn-prev').disabled = currentSlide === 0;
+      document.getElementById('btn-next').disabled = currentSlide === totalSlides - 1;
+
+      // Update Notes
+      document.getElementById('notes-slide-num').textContent = currentSlide + 1;
+      document.getElementById('notes-time-target').textContent = slides[currentSlide].getAttribute('data-time') || '';
+      document.getElementById('notes-content').textContent = notes[currentSlide] || 'Sin notas disponibles.';
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    // Keyboard Navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        toggleNotes();
+      } else if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    });
+
+    // Notes Toggle
+    function toggleNotes() {
+      const panel = document.getElementById('notes-panel');
+      const isVisible = panel.style.display === 'flex';
+      panel.style.display = isVisible ? 'none' : 'flex';
+      document.getElementById('btn-notes').style.background = isVisible ? '#1e293b' : '#0284c7';
+    }
+
+    // Timer Logic
+    let timerRunning = false;
+    let secondsElapsed = 0;
+    let timerInterval = null;
+
+    function toggleTimer() {
+      const btn = document.getElementById('btn-timer');
+      const dot = document.getElementById('timer-indicator');
+      if (!timerRunning) {
+        timerRunning = true;
+        btn.textContent = "Pausar Tiempo";
+        btn.style.background = "#b91c1c";
+        timerInterval = setInterval(() => {
+          secondsElapsed++;
+          const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+          const secs = String(secondsElapsed % 60).padStart(2, '0');
+          const display = document.getElementById('timer-display');
+          display.textContent = `${mins}:${secs}`;
+
+          // Color feedback: 15 min = 900s, 18 min = 1080s, 20 min = 1200s
+          const timerDot = document.getElementById('timer-dot');
+          if (secondsElapsed >= 1200) {
+            display.style.color = "var(--red)";
+            timerDot.style.background = "var(--red)";
+          } else if (secondsElapsed >= 900) {
+            display.style.color = "var(--yellow)";
+            timerDot.style.background = "var(--yellow)";
+          } else {
+            display.style.color = "var(--green)";
+            timerDot.style.background = "var(--green)";
+          }
+        }, 1000);
+      } else {
+        timerRunning = false;
+        clearInterval(timerInterval);
+        btn.textContent = "Reanudar Tiempo";
+        btn.style.background = "#1e293b";
+      }
+    }
+
+    // Fullscreen Toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn(`Error al activar pantalla completa: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Initialize
+    updateSlide();
+  </script>
+</body>
+</html>
